@@ -13,7 +13,8 @@
 // @grant        GM_openInTab
 // @downloadURL  https://raw.githubusercontent.com/Rootzpower/Doppel.fit-Image-Search/main/Doppel.fit_Image-Search.js
 // @updateURL    https://raw.githubusercontent.com/Rootzpower/Doppel.fit-Image-Search/main/Doppel.fit_Image-Search.js
-// ==UserScript==
+// ==/UserScript==
+
 (function() {
     'use strict';
 
