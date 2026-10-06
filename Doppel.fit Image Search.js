@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Doppel.fit Image Search
 // @namespace    https://github.com/Rootzpower
-// @version      1.2
+// @version      1.3
 // @description  Reverse image search on Doppel.fit via hover button and Alt + Right Click
 // @author       Rootzpower
 // @icon         https://www.flaticon.com/free-icon/letter-d_8142588?term=d&related_id=8142588
