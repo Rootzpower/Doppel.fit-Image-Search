@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Doppel.fit Image Search
 // @namespace    Violentmonkey Scripts
-// @version      2.1
+// @version      2.1.0
 // @description  Reverse image search on Doppel.fit via hover button and Alt + Right Click
 // @author       Rootzpower
 // @icon         https://github.com/Rootzpower/Doppel.fit-Image-Search/blob/main/icon.png?raw=true
