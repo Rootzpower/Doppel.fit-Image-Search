@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Doppel.fit Image Search
-// @namespace    https://github.com/Rootzpower
+// @namespace    Violentmonkey Scripts
 // @version      1.3
 // @description  Reverse image search on Doppel.fit via hover button and Alt + Right Click
 // @author       Rootzpower
@@ -8,13 +8,13 @@
 // @match        *://*/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
-// @downloadURL https://codeberg.org/gongchandang49/bypass-all-shortlinks-debloated/raw/branch/main/Bypass_All_Shortlinks.user.js
-// @updateURL https://codeberg.org/gongchandang49/bypass-all-shortlinks-debloated/raw/branch/main/Bypass_All_Shortlinks.meta.js
+// @downloadURL  https://github.com/Rootzpower/Doppel.fit-Image-Search/blob/main/Doppel.fit_Image-Search.js
+// @updateURL    https://github.com/Rootzpower/Doppel.fit-Image-Search/blob/main/Doppel.fit_Image-Search.js
 // ==/UserScript==
 (function() {
     'use strict';
 
-    // 1. Estilos para o botão que aparece sobre a imagem
+    // 1. Styles for the overlay button
     const style = document.createElement('style');
     style.textContent = `
         .doppel-search-btn {
@@ -39,7 +39,7 @@
     `;
     document.head.appendChild(style);
 
-    // Criar o elemento do botão
+    // 2. Create button element
     const btn = document.createElement('div');
     btn.className = 'doppel-search-btn';
     btn.textContent = '🔍 Doppel.fit';
@@ -47,11 +47,11 @@
 
     let currentImgUrl = null;
 
-    // Mostrar botão ao passar o rato por cima de uma imagem
+    // Show button on image hover
     document.addEventListener('mouseover', function(e) {
         if (e.target && e.target.nodeName === 'IMG' && e.target.src) {
             const rect = e.target.getBoundingClientRect();
-            if (rect.width > 80 && rect.height > 80) { // Ignorar ícones muito pequenos
+            if (rect.width > 80 && rect.height > 80) { // Ignore small icons
                 currentImgUrl = e.target.src;
                 btn.style.top = (rect.top + window.scrollY + 6) + 'px';
                 btn.style.left = (rect.left + window.scrollX + rect.width - 95) + 'px';
@@ -60,12 +60,12 @@
         }
     }, true);
 
-    // Esconder o botão se o rato sair da zona
+    // Hide button on mouse leave
     btn.addEventListener('mouseleave', function() {
         btn.style.display = 'none';
     });
 
-    // Clique no botão dispara a pesquisa diretamente
+    // Click event triggers search directly
     btn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -75,7 +75,7 @@
         }
     });
 
-    // Suporte secundário para Alt + Clique Direito
+    // Secondary support for Alt + Right Click
     document.addEventListener('contextmenu', function(e) {
         if (e.altKey && e.target && e.target.nodeName === 'IMG' && e.target.src) {
             e.preventDefault();
