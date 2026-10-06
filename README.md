@@ -22,7 +22,8 @@ A browser userscript that adds seamless reverse image search integration with **
 
 * **Method 1 (Hover Button)**: Search on Google Images, hover your mouse over any image thumbnail or full preview, and click the **🔍 Doppel.fit** button.
 * **Method 2 (Hotkey)**: Hold the `Alt` key and `Right-Click` on any image on Google Images to immediately upload and search.
-* 
+
+## Preview
 <p align="center">
   <img width="575" height="527" alt="firefox_6orOPmSRB6" src="https://github.com/user-attachments/assets/2bf3202c-b2b1-4ae4-87af-a10f0067fa86" />
 </p>
