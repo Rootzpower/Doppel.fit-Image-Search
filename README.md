@@ -25,5 +25,5 @@ A browser userscript that adds seamless reverse image search integration with **
 
 ## Preview
 <p align="center">
-  <img width="575" height="527" alt="firefox_6orOPmSRB6" src="https://github.com/user-attachments/assets/2bf3202c-b2b1-4ae4-87af-a10f0067fa86" />
+  <img width="575" height="527" alt="firefox_6orOPmSRB6" src="https://github.com/user-attachments/assets/93a03e0b-ceeb-41a6-b13b-5f427ec72876" />
 </p>
