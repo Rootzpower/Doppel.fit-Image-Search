@@ -1,16 +1,18 @@
 // ==UserScript==
-// @name         Doppel.fit Image Search
-// @namespace    https://github.com/Rootzpower
-// @version      2.9.0
-// @description  Reverse image search on Doppel.fit via hover button and Alt + Right Click
-// @author       Rootzpower
-// @icon         https://github.com/Rootzpower/Doppel.fit-Image-Search/blob/main/icon.png?raw=true
+// @name        Doppel.fit Image Search 
+// @namespace   Violentmonkey Scripts
+// @icon        https://github.com/Rootzpower/Doppel.fit-Image-Search/blob/main/icon.png?raw=true
+// @version     2.9.0
+//
 // @match        *://*.google.com/*
 // @match        *://*.google.pt/*
 // @include      *://*.google.*/search*
 // @include      *://*.google.*/imghp*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
+//
+// @author      Rootzpower
+// @description Reverse image search on Doppel.fit via hover button and Alt + Right Click
 // @downloadURL  https://raw.githubusercontent.com/Rootzpower/Doppel.fit-Image-Search/main/Doppel.fit_Image-Search.js
 // @updateURL    https://raw.githubusercontent.com/Rootzpower/Doppel.fit-Image-Search/main/Doppel.fit_Image-Search.js
 // ==/UserScript==
