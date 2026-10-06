@@ -11,8 +11,8 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
 //
-// @author      Rootzpower
-// @description Reverse image search on Doppel.fit via hover button and Alt + Right Click
+// @author       Rootzpower
+// @description  Reverse image search on Doppel.fit via hover button and Alt + Right Click
 // @downloadURL  https://raw.githubusercontent.com/Rootzpower/Doppel.fit-Image-Search/main/Doppel.fit_Image-Search.js
 // @updateURL    https://raw.githubusercontent.com/Rootzpower/Doppel.fit-Image-Search/main/Doppel.fit_Image-Search.js
 // ==/UserScript==
