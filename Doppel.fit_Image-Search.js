@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name        Doppel.fit Image Search
 // @namespace   Violentmonkey Scripts
-// @icon        
-// @version     2.9.2
+// @icon        https://github.com/Rootzpower/Doppel.fit-Image-Search/raw/main/icon.png
+// @version     2.9.3
 //
 // @match       *://*.google.com/*
 // @match       *://*.google.pt/*
