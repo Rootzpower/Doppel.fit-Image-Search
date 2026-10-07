@@ -2,7 +2,7 @@
 // @name        Doppel.fit Image Search
 // @namespace   Violentmonkey Scripts
 // @icon        https://github.com/Rootzpower/Doppel.fit-Image-Search/raw/main/icon.png
-// @version     3.0.2
+// @version     3.1.0
 //
 // @include     *://www.google.*/search*
 // @include     *://www.google.*/imghp*
@@ -263,7 +263,7 @@
                (res.data && (res.data.hash || res.data.id || res.data.search_id)) || null;
     }
 
-    function sendToDoppel(dataUrl) {
+    function postUpload(dataUrl) {
         return new Promise((resolve, reject) => {
             GM_xmlhttpRequest({
                 method: 'POST',
@@ -278,21 +278,76 @@
                 timeout: TIMEOUT_MS,
                 onload: (resp) => {
                     console.log('[Doppel] HTTP', resp.status, resp.responseText);
-                    let res = null;
-                    try { res = JSON.parse(resp.responseText); } catch (_) { /* not JSON */ }
-                    const hash = resp.status >= 200 && resp.status < 300 ? extractHash(res) : null;
-                    if (hash) {
-                        GM_openInTab(RESULT_URL + encodeURIComponent(hash), { active: true });
-                        resetButton();
-                        btn.style.display = 'none';
-                        resolve();
-                    } else {
-                        reject(new Error('HTTP ' + resp.status + ', no hash returned (see console, F12)'));
-                    }
+                    resolve(resp);
                 },
                 onerror: () => reject(new Error('Failed to connect to Doppel.fit API')),
                 ontimeout: () => reject(new Error('Doppel.fit API timeout'))
             });
         });
+    }
+
+    function hashFromResponse(resp) {
+        if (resp.status < 200 || resp.status >= 300) return null;
+        try { return extractHash(JSON.parse(resp.responseText)); } catch (_) { return null; }
+    }
+
+    // Session refresh, step 1 (light): plain request to the site so the server re-issues its cookies
+    function refreshSessionRequest() {
+        return new Promise((resolve) => {
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url: 'https://doppel.fit/',
+                headers: { 'Accept': 'text/html' },
+                timeout: 15000,
+                onload: (r) => { console.log('[Doppel] Session refresh request: HTTP', r.status); resolve(); },
+                onerror: () => resolve(),
+                ontimeout: () => resolve()
+            });
+        });
+    }
+
+    // Session refresh, step 2 (heavy): open the site in a background tab so its own JS runs, then close it
+    function refreshSessionTab() {
+        return new Promise((resolve) => {
+            let tab = null;
+            try {
+                tab = GM_openInTab('https://doppel.fit/', { active: false, insert: true });
+            } catch (err) {
+                console.warn('[Doppel] Could not open background tab:', err);
+                resolve();
+                return;
+            }
+            setTimeout(() => {
+                try { if (tab && tab.close) tab.close(); } catch (_) { /* ignore */ }
+                resolve();
+            }, 5000);
+        });
+    }
+
+    async function sendToDoppel(dataUrl) {
+        let resp = await postUpload(dataUrl);
+        let hash = hashFromResponse(resp);
+
+        // 403 = expired session token. Refresh the session and retry (light first, then heavy).
+        if (!hash && resp.status === 403) {
+            setBusy('Refreshing session…');
+            await refreshSessionRequest();
+            resp = await postUpload(dataUrl);
+            hash = hashFromResponse(resp);
+
+            if (!hash && resp.status === 403) {
+                setBusy('Refreshing session (tab)…');
+                await refreshSessionTab();
+                resp = await postUpload(dataUrl);
+                hash = hashFromResponse(resp);
+            }
+        }
+
+        if (!hash) {
+            throw new Error('HTTP ' + resp.status + ', no hash returned (see console, F12)');
+        }
+        GM_openInTab(RESULT_URL + encodeURIComponent(hash), { active: true });
+        resetButton();
+        btn.style.display = 'none';
     }
 })();
