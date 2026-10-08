@@ -2,7 +2,7 @@
 // @name        Doppel.fit Image Search
 // @namespace   Violentmonkey Scripts
 // @icon        https://github.com/Rootzpower/Doppel.fit-Image-Search/raw/main/icon.png
-// @version     3.1.0
+// @version     3.2.0
 //
 // @include     *://www.google.*/search*
 // @include     *://www.google.*/imghp*
@@ -23,6 +23,9 @@
     // ---------- Configuration ----------
     const API_URL      = 'https://doppel.fit/api/v1/products/search/image/upload';
     const RESULT_URL   = 'https://doppel.fit/s/image?hash=';
+    const SESSION_URL  = 'https://doppel.fit/';
+    const REFRESH_TRIES = 8;          // upload retries while the session tab is open
+    const REFRESH_INTERVAL_MS = 2500; // wait between retries
     const MIN_SIZE     = 60;      // minimum px (width and height) to show the button
     const MAX_SIDE     = 1024;    // max side of the uploaded image (resized via canvas)
     const JPEG_QUALITY = 0.9;
@@ -291,60 +294,48 @@
         try { return extractHash(JSON.parse(resp.responseText)); } catch (_) { return null; }
     }
 
-    // Session refresh, step 1 (light): plain request to the site so the server re-issues its cookies
-    function refreshSessionRequest() {
-        return new Promise((resolve) => {
-            GM_xmlhttpRequest({
-                method: 'GET',
-                url: 'https://doppel.fit/',
-                headers: { 'Accept': 'text/html' },
-                timeout: 15000,
-                onload: (r) => { console.log('[Doppel] Session refresh request: HTTP', r.status); resolve(); },
-                onerror: () => resolve(),
-                ontimeout: () => resolve()
-            });
-        });
+    function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
-    // Session refresh, step 2 (heavy): open the site in a background tab so its own JS runs, then close it
-    function refreshSessionTab() {
-        return new Promise((resolve) => {
-            let tab = null;
-            try {
-                tab = GM_openInTab('https://doppel.fit/', { active: false, insert: true });
-            } catch (err) {
-                console.warn('[Doppel] Could not open background tab:', err);
-                resolve();
-                return;
+    // Session refresh: the site renews its session token only when its own page runs in a real,
+    // visible tab (it verifies the browser with Cloudflare Turnstile). A plain request or a
+    // background tab does not renew it. So: open the site in the foreground, retry the upload
+    // every few seconds until it is accepted, then close the tab.
+    async function uploadWithSessionRefresh(dataUrl) {
+        setBusy('Refreshing session…');
+        let tab = null;
+        try {
+            tab = GM_openInTab(SESSION_URL, { active: true, insert: true, setParent: true });
+        } catch (err) {
+            console.warn('[Doppel] Could not open session tab:', err);
+        }
+
+        let resp = null;
+        try {
+            for (let i = 0; i < REFRESH_TRIES; i++) {
+                await sleep(REFRESH_INTERVAL_MS);
+                resp = await postUpload(dataUrl);
+                if (hashFromResponse(resp) || resp.status !== 403) break;
             }
-            setTimeout(() => {
-                try { if (tab && tab.close) tab.close(); } catch (_) { /* ignore */ }
-                resolve();
-            }, 5000);
-        });
+        } finally {
+            try { if (tab && tab.close) tab.close(); } catch (_) { /* ignore */ }
+        }
+        return resp;
     }
 
     async function sendToDoppel(dataUrl) {
         let resp = await postUpload(dataUrl);
         let hash = hashFromResponse(resp);
 
-        // 403 = expired session token. Refresh the session and retry (light first, then heavy).
+        // 403 = expired session token (it lasts about 1 hour)
         if (!hash && resp.status === 403) {
-            setBusy('Refreshing session…');
-            await refreshSessionRequest();
-            resp = await postUpload(dataUrl);
-            hash = hashFromResponse(resp);
-
-            if (!hash && resp.status === 403) {
-                setBusy('Refreshing session (tab)…');
-                await refreshSessionTab();
-                resp = await postUpload(dataUrl);
-                hash = hashFromResponse(resp);
-            }
+            resp = await uploadWithSessionRefresh(dataUrl);
+            hash = resp ? hashFromResponse(resp) : null;
         }
 
         if (!hash) {
-            throw new Error('HTTP ' + resp.status + ', no hash returned (see console, F12)');
+            throw new Error('HTTP ' + (resp ? resp.status : '?') + ', no hash returned (see console, F12)');
         }
         GM_openInTab(RESULT_URL + encodeURIComponent(hash), { active: true });
         resetButton();
